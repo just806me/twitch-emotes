@@ -1,0 +1,14 @@
+name: twitch-emotes
+version: "0.1.0"
+author: Just Me <just806me@gmail.com>
+about: App to do some stuff with twitch emotes
+subcommands:
+  - emoticons:
+      about: Emoticon-related commands
+      subcommands:
+        - fetch:
+            about: Save emoticons into a blank database
+        - delete:
+            about: Delete all emoticons from a database
+        - update:
+            about: Insert new emoticons into a database, delete removed ones from a database
