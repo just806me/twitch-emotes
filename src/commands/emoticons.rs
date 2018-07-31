@@ -4,84 +4,81 @@ use diesel::{self, prelude::*, PgConnection};
 use reqwest;
 use std::env;
 
+use commands::error::Result;
 use models::emoticon::Emoticon;
 use schema::emoticons;
 
-fn establish_connection() -> PgConnection {
-    trace!("connecting to database");
+fn establish_connection() -> Result<PgConnection> {
+    let database_url = env::var("DATABASE_URL")?;
 
-    let database_url = env::var("DATABASE_URL").unwrap();
-
-    trace!("database url is {}", database_url);
-
-    PgConnection::establish(&database_url).unwrap()
+    PgConnection::establish(&database_url).map_err(|e| e.into())
 }
 
-fn fetch_emoticons() -> Vec<Emoticon> {
+fn fetch_emoticons() -> Result<Vec<Emoticon>> {
     #[derive(Deserialize)]
     struct Response {
         emoticons: Vec<Emoticon>,
     }
 
-    trace!("fetching emoticons");
+    let client_id = env::var("TWITCH_CLIENT_ID")?;
 
-    let client_id: &str = &*env::var("TWITCH_CLIENT_ID").unwrap();
+    let url = reqwest::Url::parse_with_params(
+        "https://api.twitch.tv/kraken/chat/emoticon_images",
+        &[("client_id", client_id)],
+    )?;
 
-    trace!("twitch client id is {}", client_id);
-
-    let url = format!(
-        "https://api.twitch.tv/kraken/chat/emoticon_images?client_id={}",
-        client_id
-    );
-
-    reqwest::get(&url)
+    reqwest::get(url)
         .and_then(|mut r| r.json::<Response>())
         .map(|r| r.emoticons)
-        .map(|e| {
-            trace!("fetched {} emoticons", e.len());
-            e
-        })
-        .map_err(|e| error!("cound not fetch emoticons: {}", e))
-        .unwrap()
+        .map_err(|e| e.into())
 }
 
-pub fn fetch() {
+fn insert_emoticons_chunk(chunk: &[Emoticon]) -> Result<()> {
+    let conn = establish_connection()?;
+
+    diesel::insert_into(emoticons::table)
+        .values(chunk)
+        .execute(&conn)?;
+
+    Ok(())
+}
+
+pub fn fetch() -> Result<()> {
     const CHUNK_SIZE: usize = 65535 / 2; // 2 is number of fields in Emoticon struct
 
-    let emoticons = fetch_emoticons();
+    let emoticons = fetch_emoticons()?;
 
     thread::scope(|scope| {
+        let mut handles = Vec::with_capacity(emoticons.len() / CHUNK_SIZE + 1);
+
         for chunk in emoticons.chunks(CHUNK_SIZE) {
-            scope.spawn(move || {
-                trace!("inserting chunk with len {}", chunk.len());
-
-                diesel::insert_into(emoticons::table)
-                    .values(chunk)
-                    .execute(&establish_connection())
-                    .unwrap();
-            });
+            handles.push(scope.spawn(move || insert_emoticons_chunk(chunk)));
         }
-    });
 
-    trace!("done");
+        handles
+            .into_iter()
+            .map(|handle| match handle.join() {
+                Ok(result) => result,
+                Err(_) => Err("thread error".into()),
+            })
+            .collect()
+    })
 
     // TODO: download images and convert them to jpeg
 }
 
-pub fn delete() {
-    let conn = establish_connection();
+pub fn delete() -> Result<()> {
+    let conn = establish_connection()?;
 
-    trace!("deleting emoticons");
+    diesel::delete(emoticons::table).execute(&conn)?;
 
-    diesel::delete(emoticons::table).execute(&conn).unwrap();
-
-    trace!("done");
+    Ok(())
 
     // TODO: delete images
 }
 
-pub fn run(matches: Option<&clap::ArgMatches>) {
-    match matches.unwrap().subcommand() {
+pub fn run(matches: &clap::ArgMatches) -> Result<()> {
+    match matches.subcommand() {
         ("fetch", _) => fetch(),
         ("delete", _) => delete(),
         _ => unimplemented!(),
