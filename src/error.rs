@@ -1,13 +1,19 @@
 error_chain! {
     foreign_links {
-        Var(::std::env::VarError);
+        StdVarError(::std::env::VarError);
 
-        Reqwest(::reqwest::Error);
+        StdParseIntError(::std::num::ParseIntError);
 
-        ReqwestUrl(::reqwest::UrlError);
+        StdIoError(::std::io::Error);
 
-        Diesel(::diesel::result::Error);
+        StdAddrParseError(::std::net::AddrParseError);
 
-        DieselConnection(::diesel::ConnectionError);
+        ReqwestError(::reqwest::Error);
+
+        ReqwestUrlError(::reqwest::UrlError);
+
+        DieselError(::diesel::result::Error);
+
+        DieselConnectionError(::diesel::ConnectionError);
     }
 }

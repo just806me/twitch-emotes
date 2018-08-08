@@ -1,3 +1,5 @@
+use diesel::prelude::*;
+
 use error::Result;
 use schema::emoticons;
 
@@ -16,7 +18,7 @@ impl Emoticon {
         format!("images/{}.jpg", self.id)
     }
 
-    pub fn get_image(&self) -> Result<Vec<u8>> {
+    fn fetch_image(&self) -> Result<Vec<u8>> {
         use reqwest::{get, header::ContentLength};
 
         let mut response = get(&self.image_url())?;
@@ -27,32 +29,36 @@ impl Emoticon {
             .map(|ct_len| **ct_len)
             .unwrap_or(0) as usize;
 
-        let mut buffer = Vec::with_capacity(len);
+        let mut image = Vec::with_capacity(len);
 
-        response.copy_to(&mut buffer)?;
+        response.copy_to(&mut image)?;
 
-        Ok(buffer)
+        Ok(image)
+    }
 
-        // TODO: convert to jpeg
+    fn convert_image(image: Vec<u8>) -> Result<Vec<u8>> {
+        use std::io::prelude::*;
+        use std::process::{Command, Stdio};
 
-        // TODO: caching
+        let mut process = Command::new("convert")
+            .args(&["-", "jpg:-"])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()?;
 
-        // use std::{io::Write, process};
+        process.stdin.as_mut().unwrap().write_all(&image[..])?;
 
-        // fn process_image(emoticon: &Emoticon) -> Result<()> {
-        //     let image = fetch_image(emoticon)?;
+        process.wait()?;
 
-        //     let mut process = process::Command::new("ffmpeg")
-        //         .args(&["-i", "-", &emoticon.path()])
-        //         .stdin(process::Stdio::piped())
-        //         .spawn()?;
+        let mut image = Vec::new();
 
-        //     process.stdin.as_mut().unwrap().write_all(&image)?;
+        process.stdout.as_mut().unwrap().read_to_end(&mut image)?;
 
-        //     process.wait()?;
+        Ok(image)
+    }
 
-        //     Ok(())
-        // }
+    pub fn get_image(&self) -> Result<Vec<u8>> {
+        Self::convert_image(self.fetch_image()?)
     }
 
     pub fn load_from_twitch() -> Result<Vec<Self>> {
@@ -70,5 +76,14 @@ impl Emoticon {
         )?;
 
         Ok(get(url)?.json::<Response>()?.emoticons)
+    }
+
+    pub fn load_by_id(emoticon_id: i64, connection: &PgConnection) -> Result<Self> {
+        use schema::emoticons::dsl::*;
+
+        emoticons
+            .filter(id.eq(emoticon_id))
+            .first::<Self>(connection)
+            .map_err(|e| e.into())
     }
 }

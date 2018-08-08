@@ -16,6 +16,7 @@ extern crate clap;
 extern crate crossbeam_utils;
 extern crate dotenv;
 extern crate env_logger;
+extern crate hyper;
 extern crate reqwest;
 extern crate serde_json;
 
@@ -36,6 +37,7 @@ fn main() {
 
     let result = match App::from(yaml).get_matches().subcommand() {
         ("emoticons", Some(matches)) => commands::emoticons::run(matches),
+        ("server", Some(matches)) => commands::server::run(matches),
         _ => unimplemented!(),
     };
 

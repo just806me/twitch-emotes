@@ -1,16 +1,11 @@
 use clap::ArgMatches;
 use crossbeam_utils::thread;
-use diesel::{self, prelude::*, PgConnection};
+use diesel::{self, prelude::*};
 
 use error::Result;
 use models::emoticon::Emoticon;
 use schema::emoticons;
-
-fn establish_connection() -> Result<PgConnection> {
-    use std::{convert::From, env::var};
-
-    PgConnection::establish(&var("DATABASE_URL")?).map_err(From::from)
-}
+use commands::shared::*;
 
 fn collect_threads_results(handles: Vec<thread::ScopedJoinHandle<'_, Result<()>>>) -> Result<()> {
     fn convert(handle: thread::ScopedJoinHandle<'_, Result<()>>) -> Result<()> {

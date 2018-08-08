@@ -12,3 +12,15 @@ subcommands:
             about: Delete all emoticons from a database
         - update:
             about: Insert new emoticons into a database, delete removed ones from a database
+  - server:
+      about: Server-related commands
+      subcommands:
+        - start:
+            about: Start a server
+            args:
+              - address:
+                  short: a
+                  long: address
+                  help: Sets a custom binding address
+                  takes_value: true
+                  default_value: 0.0.0.0:8831
