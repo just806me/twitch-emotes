@@ -16,7 +16,7 @@ subcommands:
             about: Find an emoticon by it's code in the database
             args:
               - code:
-                  help: Sets the emoticon code to look for
+                  help: Sets an emoticon code to look for
                   required: true
                   index: 1
               - limit:
@@ -36,4 +36,31 @@ subcommands:
                   long: address
                   help: Sets a custom binding address
                   takes_value: true
+                  default_value: 0.0.0.0:8830
+  - bot:
+      about: Bot-related commands
+      subcommands:
+        - start:
+            about: Start a bot
+            args:
+              - address:
+                  short: a
+                  long: address
+                  help: Sets a custom binding address
+                  takes_value: true
                   default_value: 0.0.0.0:8831
+        - proxy:
+            about: Start a proxy from Telegram updates via polling to bot
+            args:
+              - bot:
+                  short: b
+                  long: bot
+                  help: Sets a custom bot local url
+                  takes_value: true
+                  default_value: http://localhost:8831/
+              - timeout:
+                  short: t
+                  long: timeout
+                  help: Sets a custom timeout for polling in miliseconds
+                  takes_value: true
+                  default_value: '1000'

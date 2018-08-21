@@ -15,5 +15,9 @@ error_chain! {
         DieselError(::diesel::result::Error);
 
         DieselConnectionError(::diesel::ConnectionError);
+
+        HyperError(::hyper::Error);
+
+        SerdeJsonError(::serde_json::Error);
     }
 }

@@ -22,15 +22,11 @@ pub fn start(matches: &ArgMatches) -> Result<()> {
         Server::bind(&addr.parse()?)
             .serve(|| {
                 service_fn_ok(|request| match get_image_for_request(request) {
-                    Ok(data) => {
-                        info!("200 Success");
-
-                        Response::builder()
-                            .status(200)
-                            .body(Body::from(data))
-                            .unwrap()
-                    }
-
+                    Ok(data) => Response::builder()
+                        .status(200)
+                        .header("Content-Type", "image/jpeg")
+                        .body(Body::from(data))
+                        .unwrap(),
                     Err(e) => {
                         error!("{}", e);
 

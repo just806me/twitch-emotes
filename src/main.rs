@@ -4,6 +4,8 @@ mod models;
 mod schema;
 
 #[macro_use]
+extern crate lazy_static;
+#[macro_use]
 extern crate error_chain;
 #[macro_use]
 extern crate log;
@@ -18,7 +20,9 @@ extern crate dotenv;
 extern crate env_logger;
 extern crate hyper;
 extern crate reqwest;
+extern crate serde;
 extern crate serde_json;
+extern crate uuid;
 
 use clap::App;
 
@@ -38,6 +42,7 @@ fn main() {
     let result = match App::from(yaml).get_matches().subcommand() {
         ("emoticons", Some(matches)) => commands::emoticons::run(matches),
         ("server", Some(matches)) => commands::server::run(matches),
+        ("bot", Some(matches)) => commands::bot::run(matches),
         _ => unimplemented!(),
     };
 

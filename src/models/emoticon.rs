@@ -14,10 +14,6 @@ impl Emoticon {
         format!("https://static-cdn.jtvnw.net/emoticons/v1/{}/3.0", self.id)
     }
 
-    fn image_path(&self) -> String {
-        format!("images/{}.jpg", self.id)
-    }
-
     fn fetch_image(&self) -> Result<Vec<u8>> {
         use reqwest::{get, header::ContentLength};
 
