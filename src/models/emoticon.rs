@@ -78,12 +78,22 @@ impl Emoticon {
         Ok(get(url)?.json::<Response>()?.emoticons)
     }
 
-    pub fn load_by_id(emoticon_id: i64, connection: &PgConnection) -> Result<Self> {
+    pub fn load_by_id(query: i64, connection: &PgConnection) -> Result<Self> {
         use schema::emoticons::dsl::*;
 
         emoticons
-            .filter(id.eq(emoticon_id))
+            .filter(id.eq(query))
             .first::<Self>(connection)
+            .map_err(|e| e.into())
+    }
+
+    pub fn load_by_code(query: &str, connection: &PgConnection, limit: i64) -> Result<Vec<Self>> {
+        use schema::emoticons::dsl::*;
+
+        emoticons
+            .filter(code.ilike(format!("%{}%", query)))
+            .limit(limit)
+            .load::<Emoticon>(connection)
             .map_err(|e| e.into())
     }
 }

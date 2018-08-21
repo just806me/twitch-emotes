@@ -12,6 +12,19 @@ subcommands:
             about: Delete all emoticons from a database
         - update:
             about: Insert new emoticons into a database, delete removed ones from a database
+        - find:
+            about: Find an emoticon by it's code in the database
+            args:
+              - code:
+                  help: Sets the emoticon code to look for
+                  required: true
+                  index: 1
+              - limit:
+                  short: l
+                  long: limit
+                  help: Sets a custom limit
+                  takes_value: true
+                  default_value: '10'
   - server:
       about: Server-related commands
       subcommands:

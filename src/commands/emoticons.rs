@@ -2,10 +2,10 @@ use clap::ArgMatches;
 use crossbeam_utils::thread;
 use diesel::{self, prelude::*};
 
+use commands::shared::*;
 use error::Result;
 use models::emoticon::Emoticon;
 use schema::emoticons;
-use commands::shared::*;
 
 fn collect_threads_results(handles: Vec<thread::ScopedJoinHandle<'_, Result<()>>>) -> Result<()> {
     fn convert(handle: thread::ScopedJoinHandle<'_, Result<()>>) -> Result<()> {
@@ -53,10 +53,23 @@ pub fn delete() -> Result<()> {
     // TODO: delete images
 }
 
+pub fn find(matches: &ArgMatches) -> Result<()> {
+    let code = matches.value_of("code").unwrap();
+
+    let limit = matches.value_of("limit").unwrap().parse::<i64>()?;
+
+    let emoticons = Emoticon::load_by_code(code, &establish_connection()?, limit)?;
+
+    println!("{:#?}", emoticons);
+
+    Ok(())
+}
+
 pub fn run(matches: &ArgMatches) -> Result<()> {
     match matches.subcommand() {
         ("fetch", _) => fetch(),
         ("delete", _) => delete(),
+        ("find", Some(matches)) => find(matches),
         _ => unimplemented!(),
     }
 }
