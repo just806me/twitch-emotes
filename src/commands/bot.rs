@@ -4,7 +4,6 @@ use hyper::{self, service::service_fn, Body, Request, Response, Server};
 use reqwest::{header::ContentType, Client, Url};
 use serde_json;
 use std::{env::var, thread, time::Duration};
-use uuid::Uuid;
 
 use commands::shared::*;
 use error::Result;
@@ -65,21 +64,17 @@ struct EmoticonResult {
     id: String,
     photo_url: String,
     thumb_url: String,
-    title: String,
-    description: String,
     caption: String,
 }
 
 impl EmoticonResult {
-    pub fn new(url: &str, code: &str) -> Self {
+    pub fn new(url: &str, emoticon: &Emoticon) -> Self {
         Self {
             type_: "photo".to_owned(),
-            id: Uuid::new_v4().to_string(),
+            id: emoticon.id.to_string(),
             photo_url: url.to_string(),
             thumb_url: url.to_string(),
-            title: code.to_string(),
-            description: code.to_string(),
-            caption: code.to_string(),
+            caption: emoticon.code.to_string(),
         }
     }
 }
@@ -101,7 +96,7 @@ fn get_response(body: hyper::Chunk) -> Result<Response<Body>> {
             for emoticon in emoticons {
                 let result = EmoticonResult::new(
                     &((*IMAGE_SERVER_URL).clone() + &emoticon.id.to_string()),
-                    &emoticon.code,
+                    &emoticon,
                 );
 
                 results.push(result);
