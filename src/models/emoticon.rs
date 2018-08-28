@@ -37,7 +37,7 @@ impl Emoticon {
         use std::process::{Command, Stdio};
 
         let mut process = Command::new("convert")
-            .args(&["-", "jpg:-"])
+            .args(&["-", "-background", "#FFFFFF", "-flatten", "jpg:-"])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .spawn()?;
