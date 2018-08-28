@@ -51,7 +51,7 @@ impl AnswerInlineQuery {
             method: "answerInlineQuery".to_string(),
             inline_query_id: inline_query_id.to_string(),
             results,
-            cache_time: 0 * 60 * 60,
+            cache_time: 1,
             is_personal: false,
         }
     }
@@ -71,7 +71,7 @@ impl EmoticonResult {
     pub fn new(url: &str, emoticon: &Emoticon) -> Self {
         Self {
             type_: "photo".to_owned(),
-            id: emoticon.id.to_string(),
+            id: emoticon.id.to_string() + env!("CARGO_PKG_VERSION"),
             photo_url: url.to_string(),
             thumb_url: url.to_string(),
             caption: emoticon.code.to_string(),
