@@ -87,7 +87,7 @@ impl Emoticon {
         use schema::emoticons::dsl::*;
 
         emoticons
-            .filter(code.ilike(format!("%{}%", query)))
+            .filter(code.ilike(query))
             .limit(limit)
             .load::<Emoticon>(connection)
             .map_err(|e| e.into())
