@@ -1,16 +1,25 @@
 use clap::ArgMatches;
 use hyper::rt::{self, Future};
 use hyper::{service::service_fn_ok, Body, Request, Response, Server};
+use regex::Regex;
 
 use commands::shared::*;
 use error::Result;
 use models::emoticon::Emoticon;
 
+lazy_static! {
+    static ref PATH: Regex = Regex::new("\\A/emoticons/([0-9]+)\\z").unwrap();
+}
+
 fn get_image_for_request(request: Request<Body>) -> Result<Vec<u8>> {
-    Emoticon::load_by_id(
-        request.uri().path()[1..].parse::<i64>()?,
-        &establish_connection()?,
-    )?.get_image()
+    let id = PATH.captures(request.uri().path())
+        .and_then(|captures| captures.get(1))
+        .and_then(|id_match| id_match.as_str().parse::<i64>().ok());
+
+    match id {
+        Some(id) => Emoticon::load_by_id(id, &establish_connection()?)?.get_image(),
+        None => Err(format!("bad request path {}", request.uri().path()).into()),
+    }
 }
 
 pub fn start(matches: &ArgMatches) -> Result<()> {
