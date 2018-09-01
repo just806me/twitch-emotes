@@ -17,7 +17,11 @@ fn get_image_for_request(request: Request<Body>) -> Result<Vec<u8>> {
         .and_then(|id_match| id_match.as_str().parse::<i64>().ok());
 
     match id {
-        Some(id) => Emoticon::load_by_id(id, &establish_connection()?)?.get_image(),
+        Some(id) => {
+            info!("requested emoticon {}", id);
+
+            Emoticon::load_by_id(id, &establish_connection()?)?.get_image()
+        },
         None => Err(format!("bad request path {}", request.uri().path()).into()),
     }
 }
