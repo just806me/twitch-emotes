@@ -64,6 +64,8 @@ struct EmoticonResult {
     id: String,
     photo_url: String,
     thumb_url: String,
+    photo_width: i32,
+    photo_height: i32,
     caption: String,
 }
 
@@ -74,6 +76,8 @@ impl EmoticonResult {
             id: emoticon.id.to_string() + env!("CARGO_PKG_VERSION"),
             photo_url: url.to_string(),
             thumb_url: url.to_string(),
+            photo_width: 112,
+            photo_height: 112,
             caption: emoticon.code.to_string(),
         }
     }
