@@ -19,7 +19,6 @@ extern crate crossbeam_utils;
 extern crate dotenv;
 extern crate env_logger;
 extern crate hyper;
-extern crate regex;
 extern crate reqwest;
 extern crate serde;
 extern crate serde_json;
