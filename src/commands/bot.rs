@@ -93,7 +93,7 @@ fn get_response(body: hyper::Chunk) -> Result<Response<Body>> {
             debug!("inline query {}", inline_query.query);
 
             let emoticons =
-                Emoticon::load_by_code(&inline_query.query, &establish_connection()?, 12)?;
+                Emoticon::load_by_code(&inline_query.query, &establish_connection()?, 50)?;
 
             let mut results = Vec::with_capacity(emoticons.len());
 
