@@ -51,7 +51,7 @@ impl AnswerInlineQuery {
             method: "answerInlineQuery".to_string(),
             inline_query_id: inline_query_id.to_string(),
             results,
-            cache_time: 1,
+            cache_time: 24 * 60 * 60,
             is_personal: false,
         }
     }
