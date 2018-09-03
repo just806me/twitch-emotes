@@ -9,9 +9,13 @@ use models::emoticon::Emoticon;
 fn get_image_for_request(request: Request<Body>) -> Result<Vec<u8>> {
     let id = request.uri().path()[1..].parse::<i64>()?;
 
-    info!("requested emoticon {}", id);
+    info!("loading emoticon {}", id);
 
-    Emoticon::load_by_id(id, &establish_connection()?)?.get_image()
+    let r = Emoticon::load_by_id(id, &establish_connection()?)?.get_image();
+
+    info!("emoticon {} response {:?}", id, r);
+
+    r
 }
 
 pub fn start(matches: &ArgMatches) -> Result<()> {
