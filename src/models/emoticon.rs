@@ -15,15 +15,14 @@ impl Emoticon {
     }
 
     fn fetch_image(&self) -> Result<Vec<u8>> {
-        use reqwest::{get, header::ContentLength};
-
-        let mut response = get(&self.image_url())?;
+        let mut response = reqwest::get(&self.image_url())?;
 
         let len = response
             .headers()
-            .get::<ContentLength>()
-            .map(|ct_len| **ct_len)
-            .unwrap_or(0) as usize;
+            .get("Content-Length")
+			.and_then(|value| value.to_str().ok())
+            .and_then(|value| value.parse::<usize>().ok())
+            .unwrap_or(0);
 
         let mut image = Vec::with_capacity(len);
 

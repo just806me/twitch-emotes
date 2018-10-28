@@ -13,7 +13,7 @@ fn get_image_for_request(request: Request<Body>) -> Result<Vec<u8>> {
 
     let r = Emoticon::load_by_id(id, &establish_connection()?)?.get_image();
 
-    info!("emoticon {} response {:?}", id, r);
+    info!("emoticon {} response {}", id, r.is_ok());
 
     r
 }
